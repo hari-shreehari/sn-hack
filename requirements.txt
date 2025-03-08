@@ -1,0 +1,5 @@
+fastapi
+python-dotenv
+secure-smtplib
+uvicorn
+google-generativeai
