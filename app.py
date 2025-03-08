@@ -146,7 +146,7 @@ def send_email(product_id, product_name, recipient_email, current_stock, descrip
 
 # API endpoint to trigger email
 @app.post("/send_stock_alert")
-def send_stock_alert(data: StockAlertRequest):
+async def send_stock_alert(data: StockAlertRequest):
     # Fetch product details using u_number
     product_details = get_product_details(data.product_id)
 
@@ -162,3 +162,6 @@ def send_stock_alert(data: StockAlertRequest):
         product_details["description"]
     )
 
+@app.get("/")
+async def read_route():
+    return {"Hello!" : "ServiceNow"}
