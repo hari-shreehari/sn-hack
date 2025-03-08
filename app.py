@@ -13,7 +13,7 @@ load_dotenv()
 
 EMAIL = os.getenv("EMAIL")
 PASSWORD = os.getenv("PASSWORD")
-SNOW_INSTANCE = os.getenv("SNOW_INSTANCE")  # ServiceNow instance URL
+SNOW_INSTANCE = os.getenv("SNOW_INSTANCE")  
 SNOW_USER = os.getenv("SNOW_USER")
 SNOW_PASS = os.getenv("SNOW_PASS")
 
@@ -35,6 +35,7 @@ class StockAlertRequest(BaseModel):
 # Fetch product details from ServiceNow using u_number
 def get_product_details(product_id):
     url = f"{SNOW_INSTANCE}/api/now/table/u_xhelios_products?sysparm_query=u_number={product_id}&sysparm_limit=1"
+    print(url)
     headers = {"Accept": "application/json"}
     response = requests.get(url, auth=(SNOW_USER, SNOW_PASS), headers=headers)
     
@@ -158,10 +159,10 @@ def send_email(product_id, product_name, recipient_email, current_stock, descrip
 async def send_stock_alert(data: StockAlertRequest):
     # Fetch product details using u_number
     product_details = get_product_details(data.product_id)
-
+    print(product_details)
     # Fetch vendor email using vendor_id
     recipient_email = get_vendor_email(product_details["vendor_id"])
-
+    print(recipient_email)
     # Send email
     return send_email(
         data.product_id,
