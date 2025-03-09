@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 import smtplib
 import requests
 from email.mime.text import MIMEText
@@ -7,6 +8,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
+import google.generativeai as genai
+import json
 
 # Load environment variables
 load_dotenv()
@@ -16,6 +19,10 @@ PASSWORD = os.getenv("PASSWORD")
 SNOW_INSTANCE = os.getenv("SNOW_INSTANCE")  
 SNOW_USER = os.getenv("SNOW_USER")
 SNOW_PASS = os.getenv("SNOW_PASS")
+google_api_key = os.getenv("GOOGLE_API_KEY")
+
+genai.configure(api_key=google_api_key)
+model = genai.GenerativeModel("gemini-1.5-flash")
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -154,6 +161,113 @@ def send_email(product_id, product_name, recipient_email, current_stock, descrip
         return {"message": "Email sent successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")
+
+
+class RecommendationRequest(BaseModel):
+    user_id: str
+
+# Fetch past orders for a user
+def get_user_orders(user_id):
+    url = f"{SNOW_INSTANCE}/api/now/table/u_xhelios_orders?sysparm_query=u_cust_id={user_id}&sysparm_limit=10"
+    headers = {"Accept": "application/json"}
+
+    response = requests.get(url, auth=(SNOW_USER, SNOW_PASS), headers=headers)
+    if response.status_code != 200:
+        raise HTTPException(status_code=500, detail="Error fetching orders.")
+
+    data = response.json().get("result", [])
+    return [order["u_prod_id"] for order in data] if data else []
+
+# Fetch trending products (orders from the same month)
+def get_trending_products():
+    current_month = datetime.now().month
+    url = f"{SNOW_INSTANCE}/api/now/table/u_xhelios_orders?sysparm_query=MONTH(u_order_date)={current_month}&sysparm_limit=20"
+    headers = {"Accept": "application/json"}
+
+    response = requests.get(url, auth=(SNOW_USER, SNOW_PASS), headers=headers)
+    if response.status_code != 200:
+        raise HTTPException(status_code=500, detail="Error fetching trending products.")
+
+    data = response.json().get("result", [])
+    return list(set(order["u_prod_id"] for order in data)) if data else []
+
+# Fetch product details for given product IDs
+def get_product_details_bulk(product_ids):
+    if not product_ids:
+        return {}
+
+    query = "u_numberIN" + ",".join(product_ids)
+    url = f"{SNOW_INSTANCE}/api/now/table/u_xhelios_products?sysparm_query={query}"
+    headers = {"Accept": "application/json"}
+
+    response = requests.get(url, auth=(SNOW_USER, SNOW_PASS), headers=headers)
+    if response.status_code != 200:
+        raise HTTPException(status_code=500, detail="Error fetching product details.")
+
+    products = response.json().get("result", [])
+    return {p["u_number"]: {"name": p["u_name"], "description": p["u_prod_description"]} for p in products}
+
+# Fetch all available products
+def get_all_products():
+    url = f"{SNOW_INSTANCE}/api/now/table/u_xhelios_products?sysparm_limit=50"
+    headers = {"Accept": "application/json"}
+
+    response = requests.get(url, auth=(SNOW_USER, SNOW_PASS), headers=headers)
+    if response.status_code != 200:
+        raise HTTPException(status_code=500, detail="Error fetching available products.")
+
+    products = response.json().get("result", [])
+    return {p["u_number"]: {"name": p["u_name"], "description": p["u_prod_description"]} for p in products}
+
+# Get recommendations from Gemini
+def get_recommendations(user_products, trending_products, all_products):
+    prompt = f"""
+    A user has purchased the following products:
+    
+    {json.dumps(user_products, indent=2)}
+
+    Only if no products are found, recommend items based on these trending purchases of month:
+    
+    {json.dumps(trending_products, indent=2)}
+
+    Based on these, predict what other products the user might be interested in.
+    Return a JSON list of recommended 5 to 10 product IDs from the available products.
+    Format the response as: {{"recommended_products": ["PROD0002001", "PROD0003005", ...]}}
+
+    Here are all the available products in the warehouse:
+    {json.dumps(all_products, indent=2)}
+    """
+
+    response = model.generate_content(prompt)
+
+    try:
+        response_text=response.text
+        response_text=response_text.split("```json", 1)[1]
+        response_text=response_text.rsplit("```", 1)[0]
+        response_json = json.loads(response_text)
+
+        return response_json.get("recommended_products", [])
+    except (json.JSONDecodeError, TypeError):
+        raise HTTPException(status_code=500, detail="Gemini response could not be parsed.")
+
+# API endpoint to get recommendations
+@app.post("/get_recommendations")
+async def recommend_products(request: RecommendationRequest):
+    try:
+        past_orders = get_user_orders(request.user_id)
+        user_products = get_product_details_bulk(past_orders)
+   
+        trending_products = get_trending_products()
+        trending_products_full = get_product_details_bulk(trending_products)
+
+        all_products = get_all_products()
+
+        recommended_product_ids = get_recommendations(user_products, trending_products_full, all_products)
+        
+        return {"recommended_products": recommended_product_ids}
+    except HTTPException as e:
+        return {"error": e.detail}
+
 
 # API endpoint to trigger email
 @app.post("/send_stock_alert")
