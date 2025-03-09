@@ -4,5 +4,4 @@ pydantic
 requests
 python-dotenv
 google-generativeai
-smtplib
-email
+secure-smtplib
