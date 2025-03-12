@@ -168,7 +168,7 @@ class RecommendationRequest(BaseModel):
 
 # Fetch past orders for a user
 def get_user_orders(user_id):
-    url = f"{SNOW_INSTANCE}/api/now/table/u_xhelios_orders?sysparm_query=u_cust_id={user_id}&sysparm_limit=10"
+    url = f"{SNOW_INSTANCE}/api/now/table/u_xhelios_orders?sysparm_query=u_cust_id={user_id}&sysparm_limit=40"
     headers = {"Accept": "application/json"}
 
     response = requests.get(url, auth=(SNOW_USER, SNOW_PASS), headers=headers)
@@ -226,13 +226,13 @@ def get_recommendations(user_products, trending_products, all_products):
     
     {json.dumps(user_products, indent=2)}
 
-    Only if no products are found, recommend items based on these trending purchases of month:
-    
-    {json.dumps(trending_products, indent=2)}
-
     Based on these, predict what other products the user might be interested in.
     Return a JSON list of recommended 5 to 10 product IDs from the available products.
     Format the response as: {{"recommended_products": ["PROD0002001", "PROD0003005", ...]}}
+
+    Only if no products are found, recommend items based on these trending purchases of month:
+    
+    {json.dumps(trending_products, indent=2)}
 
     Here are all the available products in the warehouse:
     {json.dumps(all_products, indent=2)}
