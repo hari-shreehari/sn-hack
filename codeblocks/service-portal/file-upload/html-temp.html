@@ -1,0 +1,70 @@
+<div class="container text-center">
+    <h2>Add New Product</h2>
+
+    <div class="form-group">
+        <label>Product Name:</label>
+        <input type="text" ng-model="data.product.u_name" class="form-control">
+    </div>
+
+    <div class="form-group">
+        <label>Sold By (Vendor ID):</label>
+        <input type="text" ng-model="data.product.u_sold_by" class="form-control">
+    </div>
+
+    <div class="form-group">
+        <label>Description:</label>
+        <input type="text" ng-model="data.product.u_prod_description" class="form-control">
+    </div>
+
+    <div class="form-group">
+        <label>Available Stock:</label>
+        <input type="number" ng-model="data.product.u_available_stock" class="form-control">
+    </div>
+
+    <div class="form-group">
+        <label>Alarm Quantity:</label>
+        <input type="number" ng-model="data.product.u_alarm_quantity" class="form-control">
+    </div>
+
+    <div class="form-group">
+        <label>Price:</label>
+        <input type="number" ng-model="data.product.u_price" class="form-control">
+    </div>
+
+    <div class="form-group text-center">
+        <label>Upload Product Image:</label>
+        <div class="file-upload-box" onclick="document.getElementById('fileInput').click();">
+            <p>Click to upload image</p>
+            <input type="file" id="fileInput" class="form-control" style="display: none;">
+        </div>
+    </div>
+
+    <br>
+    <button class="btn btn-primary btn-lg" ng-click="uploadProduct()">Add Product</button>
+
+    <p style="color: red;" ng-show="data.error">{{ data.error }}</p>
+    <p style="color: green;" ng-show="data.success">{{ data.success }}</p>
+</div>
+
+<style>
+    .file-upload-box {
+        width: 100%;
+        max-width: 400px;
+        height: 150px;
+        border: 2px dashed #007bff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        cursor: pointer;
+        margin: 10px auto;
+        border-radius: 10px;
+        color: #007bff;
+        font-weight: bold;
+    }
+
+    .file-upload-box:hover {
+        background-color: #f8f9fa;
+    }
+</style>
+

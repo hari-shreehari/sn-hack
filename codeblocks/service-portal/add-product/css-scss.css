@@ -1,0 +1,39 @@
+/* Navigation Bar */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(to right, #0044cc, #007bff);
+  color: white;
+  padding: 15px 20px;
+  font-size: 22px;
+  font-weight: bold;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+}
+
+/* Title in the Navbar */
+.navbar-title {
+  text-align: center;
+  flex-grow: 1;
+}
+
+/* Add Product Button */
+.btn-add-product {
+  background: white;
+  color: #0044cc;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 10px 18px;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  transition: 0.3s ease;
+  box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+.btn-add-product:hover {
+  background: #f8f9fa;
+  transform: scale(1.05);
+}
+

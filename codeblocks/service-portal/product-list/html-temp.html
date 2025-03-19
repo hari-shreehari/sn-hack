@@ -1,0 +1,77 @@
+<div class="container">
+  <div class="header-container">
+    <div class="search-container">
+      <input type="text" class="search-bar" placeholder="Search..." ng-model="searchQuery" />
+    </div>
+
+    <label for="file-upload" class="camera-button">
+      <input id="file-upload" type="file" accept="*" />
+      <img src="https://cdn0.iconfinder.com/data/icons/social-messaging-ui-color-shapes/128/camera-circle-blue-1024.png" alt="Camera" />
+    </label>
+
+    <div class="profile-icon">
+      <img src="https://avatar.iran.liara.run/public" alt="User Profile" />
+    </div>
+  </div>
+
+  <h2 class="text-center" ng-if="!searchQuery">Recommended Products</h2>
+  <div class="loading-spinner" ng-if="loading && !searchQuery"></div>
+
+  <div class="row recommended-section align-cards" ng-if="!loading && !searchQuery">
+    <div class="col-md-4 col-sm-6 product-column" ng-repeat="product in recommendedProducts">
+      <div class="product-card">
+        <img ng-src="{{product.image_url}}" alt="{{product.name}}" class="product-image" />
+        <h4>{{product.name}}</h4>
+
+        <!-- Wrapper for Description & Price -->
+        <div class="product-info">
+          <p><strong>Description:</strong> {{product.description}}</p>
+          <h3><strong>Price:</strong> ₹{{product.price}}</h3>
+        </div>
+
+        <button class="btn-primary" ng-click="c.addToCart(product.id)">
+          Add To Cart
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="text-center">Shop Products</h2>
+  <div class="row align-cards">
+    <div class="col-md-4 col-sm-6 product-column" ng-repeat="product in filteredProducts = (data.products | filter:searchQuery) track by product.id">
+      <div class="product-card">
+        <img ng-src="{{product.image_url}}" alt="{{product.name}}" class="product-image" />
+        <h4>{{product.name}}</h4>
+
+        <!-- Wrapper for Description & Price -->
+        <div class="product-info">
+          <p><strong>Description:</strong> {{product.description}}</p>
+          <h3><strong>Price:</strong> ₹{{product.price}}</h3>
+        </div>
+
+        <button class="btn-primary" ng-click="c.addToCart(product.id)">
+          Add To Cart
+        </button>
+      </div>
+    </div>
+
+    <div class="col-md-4 col-sm-6 product-column" ng-repeat="product in data.products | filter:!searchQuery track by product.id"
+      ng-if="filteredProducts.length < data.products.length">
+      <div class="product-card">
+        <img ng-src="{{product.image_url}}" alt="{{product.name}}" class="product-image" />
+        <h4>{{product.name}}</h4>
+
+        <!-- Wrapper for Description & Price -->
+        <div class="product-info">
+          <p><strong>Description:</strong> {{product.description}}</p>
+          <h3><strong>Price:</strong> ₹{{product.price}}</h3>
+        </div>
+
+        <button class="btn-primary" ng-click="c.addToCart(product.id)">
+          Add To Cart
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+

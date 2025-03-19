@@ -1,0 +1,20 @@
+<div style="display: flex; flex-direction: column; align-items: center; gap: 10px">
+    <h3>Upload an Image for AI Analysis</h3>
+    <input type="file" id="fileInput" accept="image/*" onchange="angular.element(this).scope().uploadImage(this.files)" />
+
+    <div ng-if="c.previewImage">
+        <img ng-src="{{c.previewImage}}" style="max-width: 100%; height: auto; border-radius: 10px; box-shadow: 2px 2px 10px gray;" />
+    </div>
+
+    <button ng-click="c.analyzeImage()" style="background: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer;">
+        Analyze
+    </button>
+
+    <div id="aiResults" ng-if="c.analysisResult">
+        <h4>AI Results:</h4>
+        <ul>
+            <li ng-repeat="result in c.analysisResult">{{ result }}</li>
+        </ul>
+    </div>
+</div>
+
